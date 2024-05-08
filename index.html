@@ -1,0 +1,110 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.6.4/dist/vuetify.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.4/dist/vuetify.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-layout ref="app" class="rounded rounded-md">
+
+                <v-app-bar name="app-bar">
+                    <div class="mx-auto">Breadchen</div>
+                </v-app-bar>
+
+                <v-main class="ma-3">
+                    <v-text-field v-model="date" label="Datum"></v-text-field>
+                    <v-select label="Zimmer" :items="zimmer" v-model="szimmer" dense></v-select>
+                    <v-select label="Brötchen" :items="types" v-model="stype" dense></v-select>
+                    <v-text-field label="Menge" v-model="menge"></v-text-field>
+                    <v-btn @click="add" small class="mb-3 mr-3">hinzufügen</v-btn>
+                    <v-btn @click="send" small class="mb-3">E-Mail senden</v-btn>
+
+                    <div v-for="(i, z) in added">
+                        <h5>{{ z }}</h5>
+                        <ul>
+                            <li v-for="b in i" class="ml-5">{{ b }}</li>
+                        </ul>
+                    </div>
+                </v-main>
+
+            </v-layout>
+        </v-app>
+    </div>
+    <script>
+        const { createApp } = Vue
+        const { createVuetify } = Vuetify
+
+        const vuetify = createVuetify()
+
+        createApp({
+            data() {
+                return {
+                    zimmer: [],
+                    types: ['Hell', 'Dinkel', 'Körner'],
+
+                    date: '',
+                    szimmer: 'Zimmer 2',
+                    stype: 'Hell',
+                    menge: '5',
+
+                    added: {},
+                    check: '',
+                };
+            },
+
+            mounted() {
+                for (let i = 1; i <= 10; i++)
+                    this.zimmer.push('Zimmer ' + i);
+
+                var currentDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+                this.date = currentDate.toLocaleDateString('de-DE', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                });
+            },
+
+            methods: {
+                add() {
+                    if (!this.added[this.szimmer])
+                        this.added[this.szimmer] = [];
+
+                    this.added[this.szimmer].push(this.menge + 'x ' + this.stype);
+                },
+
+                send() {
+                    let recipient = 'marian.rosk@gmail.com';
+                    let subject = 'Brötchenbestellung';
+                    let body = [
+                        'Sehr geehrte Damen und Herren,',
+                        '',
+                        'wir möchten gerne zu morgen den ' + this.date + ' folgendes Bestellen:',
+                        '',
+                    ];
+
+                    for (let [zimmer, items] of Object.entries(this.added)) {
+                        body.push(zimmer);
+
+                        for (let i of items) body.push(' - ' + i);
+                    }
+
+                    body = body.concat([
+                        '',
+                        '',
+                        'Mit freundlichen Grüßen',
+                    ]);
+
+                    window.open("mailto:" + recipient + "?subject=" + subject + "&body=" + encodeURIComponent(body.join("\n")));
+                },
+            }
+        }).use(vuetify).mount('#app')
+    </script>
+
+</body>
+
+</html>
